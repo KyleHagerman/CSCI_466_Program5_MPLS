@@ -86,10 +86,38 @@ class Link:
                     #update the next free time of the interface according to serialization delay
                     pkt_size = len(pkt_S)*8 #assuming each character is 8 bits
                     intf_a.next_avail_time = time.time() + pkt_size/intf_a.capacity
+
+                    intf_a_hp_pkts = 0
+                    intf_a_lp_pkts = 0
+                    priority = 0
+                    hp_queue = queue.Queue(0)
+                    lp_queue = queue.Queue(0)
+                    #print("We're in link.py just before the for loop")
+                    for i in range(intf_a.out_queue.qsize()):
+                        temp = intf_a.get('out')
+                        if(temp[0] is "N" or "M"):
+                            priority = int(temp[6])
+                        else:
+                            priority = int(temp[5])
+                        if priority is 1:
+                            intf_a_hp_pkts += 1
+                            hp_queue.put(temp)
+                        else:
+                            intf_a_lp_pkts += 1
+                            lp_queue.put(temp)
+                    while not hp_queue.empty():
+                        #print("Am i stuck in the hp_queue while loop?")
+                        intf_a.put(hp_queue.get(), 'out')
+                    while not lp_queue.empty():
+                        #print("Am i stuck in the lp_queue while loop?")
+                        intf_a.put(lp_queue.get(), 'out')
+
                     print('%s: transmitting frame "%s" on %s %s -> %s %s \n' \
                           ' - seconds until the next available time %f\n' \
-                          ' - queue size %d' \
-                          % (self, pkt_S, node_a, node_a_intf, node_b, node_b_intf, intf_a.next_avail_time - time.time(), intf_a.out_queue.qsize()))
+                          ' - queue size %d\n' \
+                          ' - number of high priority packets %d\n' \
+                          ' - number of low priority packets %d\n'
+                          % (self, pkt_S, node_a, node_a_intf, node_b, node_b_intf, intf_a.next_avail_time - time.time(), intf_a.out_queue.qsize(), intf_a_hp_pkts, intf_a_lp_pkts))
                 # uncomment the lines below to see waiting time until next transmission
 #                 else:
 #                     print('%s: waiting to transmit packet on %s %s -> %s, %s for another %f milliseconds' % (self, node_a, node_a_intf, node_b, node_b_intf, intf_a.next_avail_time - time.time()))
