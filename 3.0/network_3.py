@@ -44,7 +44,7 @@ class Interface:
 
 class MPLSFrame:
     ## packet encoding lengths
-    label_S_length = 1 #change later
+    label_S_length = 1
     dst_S_length = 5
 
     def __init__(self, label, dst, data_S):
@@ -83,7 +83,7 @@ class NetworkPacket:
         self.dst = dst
         self.data_S = data_S
         #TODO: add priority to the packet class
-        self.priority = priority
+        self.priority = priority        #now implements the priority field
 
     ## called when printing the object
     def __str__(self):
@@ -92,7 +92,7 @@ class NetworkPacket:
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
         byte_S = str(self.dst).zfill(self.dst_S_length)
-        byte_S += str(self.priority)
+        byte_S += str(self.priority)    #priority is after destination but before the data string
         byte_S += self.data_S
         return byte_S
 
@@ -101,7 +101,7 @@ class NetworkPacket:
     @classmethod
     def from_byte_S(self, byte_S):
         dst = byte_S[0 : NetworkPacket.dst_S_length].strip('0')
-        priority = byte_S[NetworkPacket.dst_S_length : NetworkPacket.dst_S_length + 1]
+        priority = byte_S[NetworkPacket.dst_S_length : NetworkPacket.dst_S_length + 1]      #note the priority byte here
         data_S = byte_S[NetworkPacket.dst_S_length + 1 : ]
         return self(dst, data_S, priority)
 
@@ -198,10 +198,8 @@ class Router:
             elif fr.type_S == "MPLS":
                 # TODO: handle MPLS frames
                 m_fr = MPLSFrame.from_byte_S(pkt_S) #parse a frame out
-                #for now, we just relabel the packet as an MPLS frame without encapsulation
-                # m_fr = p
                 #send the MPLS frame for processing
-                self.process_MPLS_frame(m_fr, i, int(pkt_S[6]))
+                self.process_MPLS_frame(m_fr, i, int(pkt_S[6]))     # Added the priority field to the process method but not the frame itself (needed for lookups)
             else:
                 raise('%s: unknown frame type: %s' % (self, fr.type))
 
@@ -210,16 +208,14 @@ class Router:
     #  @param i Incoming interface number for packet p
     def process_network_packet(self, pkt, i):
         #TODO: encapsulate the packet in an MPLS frame based on self.encap_tbl_D
-        #for now, we just relabel the packet as an MPLS frame without encapsulation
         m_fr = pkt
+
         if(self.encap_tbl_D[pkt.dst] is "Y"):
             m_fr = MPLSFrame("M", pkt.dst, pkt.priority + pkt.data_S)
-            self.process_MPLS_frame(m_fr, i, int(pkt.priority))
+            self.process_MPLS_frame(m_fr, i, int(pkt.priority))     #priority field required for lookups
         else:
             print('%s: packet destination does not match encapsulation table format, packet lost' % self)
         print('%s: encapsulated packet "%s" as MPLS frame "%s"' % (self, pkt, m_fr))
-        #send the encapsulated packet for processing as MPLS frame
-        #self.process_MPLS_frame(m_fr, i)
 
 
     ## process an MPLS frame incoming to this router
@@ -228,23 +224,16 @@ class Router:
     def process_MPLS_frame(self, m_fr, i, priority):
         #TODO: implement MPLS forward, or MPLS decapsulation if this is the last hop router for the path
         print('%s: processing MPLS frame "%s"' % (self, m_fr))
-        # for now forward the frame out interface 1
-
         try:
             if(self.decap_tbl_D[m_fr.dst] is "Y"):
                 pkt = NetworkPacket(m_fr.dst, m_fr.data_S[1:], m_fr.data_S[0])
                 fr = LinkFrame('Network', pkt.to_byte_S())
-                #self.intf_L[self.frwd_tbl_D[m_fr.dst]].put(fr.to_byte_S(), 'out', True)
-                j = self.frwd_tbl_D[i][priority][m_fr.dst]
+                j = self.frwd_tbl_D[i][priority][m_fr.dst]          #using a triple nested dictionary now
                 self.intf_L[j].put(fr.to_byte_S(), 'out', True)
                 print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, j))
             else:
                 fr = LinkFrame('MPLS', m_fr.to_byte_S())
-                #self.intf_L[self.frwd_tbl_D[m_fr.dst]].put(fr.to_byte_S(), 'out', True)
-                #print(i)
-                #print(type(priority))
-                #print(m_fr.dst)
-                j = self.frwd_tbl_D[i][priority][m_fr.dst]
+                j = self.frwd_tbl_D[i][priority][m_fr.dst]          #using a triple nested dictionary now 
                 self.intf_L[j].put(fr.to_byte_S(), 'out', True)
                 print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, j))
         except queue.Full:

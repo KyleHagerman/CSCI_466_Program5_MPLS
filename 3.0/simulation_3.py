@@ -22,9 +22,7 @@ if __name__ == '__main__':
 
     #create routers and routing tables for connected clients (subnets)
     encap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "Y"}    # table used to encapsulate network packets into MPLS frames
-    #frwd_tbl_D = {"H2" : 1, "H1" : 0, "H3" : 2, "H3" : 3}     # table used to forward MPLS frames
-    #frwd_tbl_D = {0 : {"H3" : 2}, 1 : {"H3" : 3}, 2 : {"H1" : 0}, 3 : {"H2" : 1}}
-    frwd_tbl_D = {0 : {0 : {"H3" : 3}, 1 : {"H3" : 2}},
+    frwd_tbl_D = {0 : {0 : {"H3" : 3}, 1 : {"H3" : 2}},   # In_interface, priority of packet, destination node, and finally out_interface
                   1 : {0 : {"H3" : 3}, 1 : {"H3" : 2}},
                   2 : {0 : {"H1" : 0, "H2" : 1}, 1 : {"H1" : 0, "H2" : 1}},
                   3 : {0 : {"H1" : 0, "H2" : 1}, 1 : {"H1" : 0, "H2" : 1}}}
@@ -38,8 +36,6 @@ if __name__ == '__main__':
     object_L.append(router_a)
 
     encap_tbl_D = {"H1" : "N", "H2" : "N", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 1, "H1" : 0, "H2" : 0}
-    #frwd_tbl_D = {0 : {"H3" : 1}, 1 : {"H1" : 0}}
     frwd_tbl_D = {0 : {1 : {"H3" : 1}}, 1 : {1 : {"H1" : 0, "H2" : 0}}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "N"}
     router_b = Router(name='RB',
@@ -51,8 +47,6 @@ if __name__ == '__main__':
     object_L.append(router_b)
 
     encap_tbl_D = {"H1" : "N", "H2" : "N", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 1, "H1" : 0, "H2" : 0}
-    #frwd_tbl_D = {0 : {"H3" : 1}, 1 : {"H1" : 0}}
     frwd_tbl_D = {0 : {0 : {"H3" : 1}}, 1 : {0 : {"H1" : 0, "H2" : 0}}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "N"}
     router_c = Router(name='RC',
@@ -64,8 +58,6 @@ if __name__ == '__main__':
     object_L.append(router_c)
 
     encap_tbl_D = {"H1" : "Y", "H2" : "Y", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 2, "H1" : 0, "H2" : 1}
-    #frwd_tbl_D = {0 : {"H3" : 2}, 1 : {"H3" : 2}, 2 : {"H1" : 0}, 2 : {"H2" : 1}}
     frwd_tbl_D = {0 : {0 : {"H3" : 2}, 1 : {"H3" : 2}}, 1 : {0 : {"H3" : 2}, 1 : {"H3" : 2}},
                   2 : {0 : {"H1" : 1, "H2" : 1}, 1 : {"H1" : 0, "H2" : 0}}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "Y"}

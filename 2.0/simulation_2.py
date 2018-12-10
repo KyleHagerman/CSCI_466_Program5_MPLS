@@ -17,13 +17,12 @@ if __name__ == '__main__':
     object_L.append(host_1)
     host_2 = Host('H2')
     object_L.append(host_2)
-    host_3 = Host('H3')
+    host_3 = Host('H3')         #added the third host
     object_L.append(host_3)
 
     #create routers and routing tables for connected clients (subnets)
     encap_tbl_D = {"H2" : "Y", "H1" : "N", "H3" : "Y"}    # table used to encapsulate network packets into MPLS frames
-    #frwd_tbl_D = {"H2" : 1, "H1" : 0, "H3" : 2, "H3" : 3}     # table used to forward MPLS frames
-    frwd_tbl_D = {0 : {"H3" : 2}, 1 : {"H3" : 3}, 2 : {"H1" : 0}, 3 : {"H2" : 1}}
+    frwd_tbl_D = {0 : {"H3" : 2}, 1 : {"H3" : 3}, 2 : {"H1" : 0}, 3 : {"H2" : 1}} # Given the in interface and our destination, what's the out interface?
     decap_tbl_D = {"H1" : "Y", "H2" : "Y", "H3" : "N"}    # table used to decapsulate network packets from MPLS frames
     router_a = Router(name='RA',
                               intf_capacity_L=[500,500,500,500],
@@ -34,7 +33,6 @@ if __name__ == '__main__':
     object_L.append(router_a)
 
     encap_tbl_D = {"H1" : "N", "H2" : "N", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 1, "H1" : 0, "H2" : 0}
     frwd_tbl_D = {0 : {"H3" : 1}, 1 : {"H1" : 0}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "N"}
     router_b = Router(name='RB',
@@ -46,7 +44,6 @@ if __name__ == '__main__':
     object_L.append(router_b)
 
     encap_tbl_D = {"H1" : "N", "H2" : "N", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 1, "H1" : 0, "H2" : 0}
     frwd_tbl_D = {0 : {"H3" : 1}, 1 : {"H1" : 0}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "N"}
     router_c = Router(name='RC',
@@ -58,7 +55,6 @@ if __name__ == '__main__':
     object_L.append(router_c)
 
     encap_tbl_D = {"H1" : "Y", "H2" : "Y", "H3" : "N"}
-    #frwd_tbl_D = {"H3" : 2, "H1" : 0, "H2" : 1}
     frwd_tbl_D = {0 : {"H3" : 2}, 1 : {"H3" : 2}, 2 : {"H1" : 0}, 2 : {"H2" : 1}}
     decap_tbl_D = {"H2" : "N", "H1" : "N", "H3" : "Y"}
     router_d = Router(name='RD',

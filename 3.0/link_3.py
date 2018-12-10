@@ -87,28 +87,31 @@ class Link:
                     pkt_size = len(pkt_S)*8 #assuming each character is 8 bits
                     intf_a.next_avail_time = time.time() + pkt_size/intf_a.capacity
 
-                    intf_a_hp_pkts = 0
-                    intf_a_lp_pkts = 0
-                    priority = 0
-                    hp_queue = queue.Queue(0)
-                    lp_queue = queue.Queue(0)
-                    #print("We're in link.py just before the for loop")
+                    intf_a_hp_pkts = 0              # A counter for how many high priority packets are in the queue
+                    intf_a_lp_pkts = 0              # A counter for how many low priority packets are in the queue
+                    priority = 0                    # Initialize priority field here for later scope usage
+                    hp_queue = queue.Queue(0)       # A temporary queue to organize high priority packets before low ones
+                    lp_queue = queue.Queue(0)       # A temporary queue to organize low priority packets after high ones
+
                     for i in range(intf_a.out_queue.qsize()):
-                        temp = intf_a.get('out')
-                        if(temp[0] is "N" or "M"):
+                        temp = intf_a.get('out')    #temporarily take out the next packet waiting
+
+                        if(temp[0] is "N" or "M"):  #if the packet has a label, then the priority is in position 6
                             priority = int(temp[6])
-                        else:
+                        else:                       #else the priority is in position 5
                             priority = int(temp[5])
-                        if priority is 1:
+
+                        if priority is 1:           #if the priority is 1, then it is of high priority
                             intf_a_hp_pkts += 1
                             hp_queue.put(temp)
-                        else:
+                        else:                       #else it is of low priority
                             intf_a_lp_pkts += 1
                             lp_queue.put(temp)
-                    while not hp_queue.empty():
-                        #print("Am i stuck in the hp_queue while loop?")
+
+                    while not hp_queue.empty():     #put the high priority packets in the queue first
                         intf_a.put(hp_queue.get(), 'out')
-                    while not lp_queue.empty():
+
+                    while not lp_queue.empty():     #then put the low priority packets back
                         #print("Am i stuck in the lp_queue while loop?")
                         intf_a.put(lp_queue.get(), 'out')
 

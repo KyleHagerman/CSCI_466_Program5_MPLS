@@ -224,18 +224,14 @@ class Router:
     def process_MPLS_frame(self, m_fr, i):
         #TODO: implement MPLS forward, or MPLS decapsulation if this is the last hop router for the path
         print('%s: processing MPLS frame "%s"' % (self, m_fr))
-        # for now forward the frame out interface 1
-
         try:
             if(self.decap_tbl_D[m_fr.dst] is "Y"):
                 pkt = NetworkPacket(m_fr.dst, m_fr.data_S)
                 fr = LinkFrame('Network', pkt.to_byte_S())
-                #self.intf_L[self.frwd_tbl_D[m_fr.dst]].put(fr.to_byte_S(), 'out', True)
                 self.intf_L[self.frwd_tbl_D[i][m_fr.dst]].put(fr.to_byte_S(), 'out', True)
                 print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
             else:
                 fr = LinkFrame('MPLS', m_fr.to_byte_S())
-                #self.intf_L[self.frwd_tbl_D[m_fr.dst]].put(fr.to_byte_S(), 'out', True)
                 self.intf_L[self.frwd_tbl_D[i][m_fr.dst]].put(fr.to_byte_S(), 'out', True)
                 print('%s: forwarding frame "%s" from interface %d to %d' % (self, fr, i, 1))
         except queue.Full:
